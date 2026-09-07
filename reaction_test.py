@@ -1,3 +1,6 @@
+
+#gives avrage of ~100ms on reaction test
+#depeding on fps it gives ~90-120ms for me
 import dxcam
 import win32api, win32con
 import ctypes
