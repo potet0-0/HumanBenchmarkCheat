@@ -7,11 +7,12 @@ import ctypes
 import keyboard
 import numpy as np
 import time
+import cv2
 
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
-camera = dxcam.create(output_color="BGR")
-camera.start(target_fps=60, video_mode=True)
+camera = dxcam.create(output_color="BGR", region=(0, 0, 1920, 600))
+camera.start(target_fps=120, video_mode=True)
 
 clicked = False
 running = False
@@ -30,8 +31,8 @@ def toggle():
 keyboard.add_hotkey('f8', toggle)
 print("f8 to start/stop, l to quit")
 
-green_lower = np.array([61, 198, 61])
-green_upper = np.array([111, 218, 81])
+green_lower = np.array([61, 198, 61], dtype=np.uint8)
+green_upper = np.array([111, 218, 81], dtype=np.uint8)
 
 while True:
     if keyboard.is_pressed('l'):
@@ -45,16 +46,12 @@ while True:
     if frame is None:
         continue
 
-    roi = frame[0:600, 0:1920]
-    mask_green = np.all((roi >= green_lower) & (roi <= green_upper), axis=2)
-
-    green_pixels = mask_green.sum()
+    green_pixels = cv2.countNonZero(cv2.inRange(frame, green_lower, green_upper))
 
     if green_pixels > 5000 and not clicked:
         print(f"Green detected! ({green_pixels} pixels) clicking")
         click(960, 300)
         clicked = True
-        time.sleep(0.5)
     elif green_pixels < 1000:
         clicked = False
 
